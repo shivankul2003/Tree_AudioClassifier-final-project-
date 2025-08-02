@@ -41,3 +41,9 @@ Saved as: tree_sound_model.pkl
 ✅ Add more species
 ✅ Use CNN or Deep Learning models
 ✅ Deploy on Hugging Face Spaces
+
+Google Drive link:
+https://drive.google.com/drive/folders/1_TP5CF6VZYpSDhfOj_0Ul15TTkDQuFYk?usp=drive_link
+
+Copy link of Colab:
+https://colab.research.google.com/drive/1kB9MfOO3VXX0Za8UnvunWcTzSXcXQMej?usp=drive_link
