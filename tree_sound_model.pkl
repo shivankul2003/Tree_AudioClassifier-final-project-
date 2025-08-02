@@ -1,0 +1,66 @@
+import os
+import numpy as np
+import librosa
+import random
+from sklearn.model_selection import train_test_split
+from sklearn.ensemble import RandomForestClassifier
+from sklearn.metrics import accuracy_score, confusion_matrix
+import joblib
+
+# ✅ Folder path (Apne dataset folder ka path yahan do)
+data_folder = "tree_sounds"
+
+# ✅ Augmentation functions
+def pitch_shift(y, sr):
+    return librosa.effects.pitch_shift(y, sr=sr, n_steps=random.choice([-2, 2]))
+
+def speed_change(y):
+    return librosa.effects.time_stretch(y, rate=random.uniform(0.9, 1.1))
+
+def add_noise(y):
+    noise = np.random.randn(len(y))
+    return y + 0.005 * noise
+
+# ✅ Prepare dataset
+data = []
+labels = []
+
+for file in os.listdir(data_folder):
+    if file.endswith(".wav"):
+        label = file.split(".")[0]  # species name
+        file_path = os.path.join(data_folder, file)
+
+        # Load original
+        y, sr = librosa.load(file_path, sr=None)
+        mfcc = librosa.feature.mfcc(y=y, sr=sr, n_mfcc=40)
+        data.append(np.mean(mfcc.T, axis=0))
+        labels.append(label)
+
+        # Augmentations (3 per file)
+        for _ in range(3):
+            y_aug = random.choice([pitch_shift(y, sr), speed_change(y), add_noise(y)])
+            mfcc = librosa.feature.mfcc(y=y_aug, sr=sr, n_mfcc=40)
+            data.append(np.mean(mfcc.T, axis=0))
+            labels.append(label)
+
+data = np.array(data)
+labels = np.array(labels)
+
+print(f"✅ Dataset shape: {data.shape}")
+print(f"✅ Classes: {set(labels)}")
+
+# ✅ Split dataset
+X_train, X_test, y_train, y_test = train_test_split(data, labels, test_size=0.2, random_state=42)
+
+# ✅ Train model
+model = RandomForestClassifier(n_estimators=200, random_state=42)
+model.fit(X_train, y_train)
+
+# ✅ Evaluate
+y_pred = model.predict(X_test)
+print("\n✅ Accuracy:", accuracy_score(y_test, y_pred))
+print("✅ Confusion Matrix:\n", confusion_matrix(y_test, y_pred))
+
+# ✅ Save model
+joblib.dump(model, "tree_sound_model.pkl")
+print("\n✅ Model saved as tree_sound_model.pkl")
